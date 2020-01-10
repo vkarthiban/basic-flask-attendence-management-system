@@ -1,0 +1,140 @@
+import psycopg2
+from psycopg2.extensions import AsIs
+import re
+from psycopg2 import connect
+import sys
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+from Exceptions import DbException
+
+class DatabaseAgent:
+    '''
+    Module Name       : DBAgent
+    Description       : Class definition for database management. This module acts as a wrapper for the PsycoPG 2 library. 
+                        There will be basic functions for 
+    '''
+    def __init__(self, dbName, userName, host, password, port):
+        self.database = dbName
+        self.userName = userName
+        self.host = host
+        self.password = password
+        self.port = port
+
+    def initConnection(self):
+        '''
+        
+        '''
+        try:
+            self.connection = psycopg2.connect(database = self.database, user = self.userName, host = self.host, password = self.password, port = self.port)
+            self.cursor = self.connection.cursor()
+        except DbException as dbx:
+            pass
+
+    def createDefaultConnection(self):
+        return psycopg2.connect(database = self.database, user = self.userName, host = self.host, password = self.password, port = self.port)
+
+    def createDatabase(self,databaseName):
+        con = psycopg2.connect(user = self.userName,host=self.host,password = self.password) 
+        con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        cur = con.cursor()
+        cur.execute('CREATE DATABASE ' + databaseName)
+        cur.close()
+        con.close()
+    
+    def createTable(self,tableName,vars):
+        query =  "CREATE TABLE IF NOT EXISTS " + tableName + " (ID SERIAL," + " VARCHAR(250),".join(vars) + ")"
+        self.res = self.cursor.execute(query)
+
+        if self.res == True:
+            print ("table created")
+        else:
+            print("table can not created")
+
+
+    def pushData(self,tableName, fields, values): 
+        '''
+        Function Name : *pushData*
+        Arguments     : **tableName** Type: string, *Description:* name of the table to insert data to
+                        **fields** *Type:* List, *Description:* Denotes the columns in a table
+                        **values** *Type:* List, *Description:* Denotes the values to be inserted into the table
+        Returns       : True if successful, False otherwise
+        '''
+        query = 'INSERT INTO '+ tableName +'(%s) VALUES %s'
+        val= self.cursor.execute(query, (AsIs(','.join(fields)), tuple(values)))
+        self.connection.commit()
+        
+        if val == None:
+            print ("data inserted")
+            return True
+        else:
+            print("data canot be inserted",val)
+            return False
+
+    
+    def fetchData(self, tableName, fields, conditions = dict()): 
+        '''
+        Function Name : *fetchData*
+        Arguments     : * **tableName** *Type:* string, *Description:* The name of the table to fetch data from
+                        * **fields** *Type:* List, *Description:* Denotes the columns in the table to fetch data from
+                        * **conditions** *Type:* Dictionary, *Description:* The conditions 
+        '''
+        query = "SELECT "
+        ctr = 0
+        for fieldName in fields:
+            query += "{0}".format(fieldName)
+            ctr += 1
+            if ctr != len(fields):
+                query += ", "
+        query+= " FROM " + tableName
+
+        if len(conditions) > 0:
+            query += " WHERE "
+            keys = list(conditions.keys())
+            for key in keys:
+                query += str(key) + " = '" + str(conditions[key]) + "' "
+                if key != keys[-1]:
+                    query += " AND "
+
+        self.cursor.execute(query)
+        result = self.cursor.fetchall()
+        return result
+
+    def editData(self, tableName, cols = {}):
+        pass
+
+    def deleteTable(self, table_name):
+        query = "DROP TABLE " + table_name
+        self.cursor.execute(query)
+        self.connection.commit()
+
+    def deleteDb(self, db_name):
+        query = "drop database " + db_name
+        newConn = self.createDefaultConnection() 
+        newCur = newConn.cursor()
+        newConn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        newCur.execute(query)
+        newConn.commit()
+        newConn.close()
+        
+    def alterTable(self, tableName, colomname):
+        query = "ALTER TABLE "+ tableName+" DROP COLUMN "+colomname+";"
+        self.cursor.execute(query)
+        self.connection.commit()
+    #def alterContent(self,tableName,)
+
+    # def create_user(self, user_name, role, password):
+    #     query = "CREATE ROLE " + user_name +" WITH " + role +" PASSWORD "+"'" + password + "'"
+    #     self.cursor.execute(query)
+    #     self.connection.commit()
+
+    # def deleteUser(self, user_name):
+    #     query = "DROP ROLE " + user_name 
+    #     self.cursor.execute(query)
+    #     self.connection.commit()     
+        
+    # def changeRole(self, rolename, role):
+    #     query = "ALTER ROLE " + rolename +" WITH "+ role
+    #     self.cursor.execute(query)
+    #     self.connection.commit()
+
+    # def dbFinalize(self):
+    #     self.connection.close()

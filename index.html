@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+
+<html>
+
+    <head>
+
+    <meta charset="UTF8">
+
+    <link rel = "stylesheet" href = "style.css" type = "text/css">
+
+    <script src = "regex.js"></script>
+
+    <script src = "messageDispatch.js"></script>
+
+    <script src = "validation.js">
+
+    </script>
+
+    </head>
+
+    <body id = "masterSignInBody">
+
+        <div class = "masterloginForm">
+
+            <form method = "POST">
+
+            <img src = "Kunnel_Logo_-_Color.png" id = "masterSignInLogo">  
+
+            <label id = "masterSignInLogoTitle">Kunnel Engineers & Contractors (p) Ltd.</label><br>
+
+            <label id = "loginTitle">Admin login</label>
+
+            <div id = "loginDetails">
+
+            <span id ="userNameErr" class ="error"></span><br>
+
+            <input type = "text" name = "userName" id = "username" placeholder = "  User Name" required><br>
+
+            <span id ="passErr" class = "error"></span><br>
+
+            <input type = "password" name = "password" id = "pass" placeholder = "  Password" required><br>
+
+            </div>
+
+            <input type = "checkbox" checked = "checked" id = "checkbox">
+              
+            <label id = "checkboxName">Remember me</label>
+
+            <a href = " " id = "forgotPassword">Forgot your password?</a>
+         
+            <input type = "submit" value = "Sign In" id = "masterLoginBtn" onclick = "sendData();">
+
+            <a href = " " id = "newUserEnquire">New User? Sign Up</a>
+
+            </form>
+
+        </div>
+
+    </body>
+
+</html>
